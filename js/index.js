@@ -1,4 +1,7 @@
 $(function(){
+    let key = '';
+    let myLat = 0, myLon = 0;
+ 
     $('.threetemp-body').slick({
        slidesToShow: 3,
        slidesToScroll: 1,
@@ -6,7 +9,7 @@ $(function(){
        centerMode: true,
        focusOnSelect: true
     });
-
+ 
     $('#searchbtn').on('click', function(){
         if($('.searchinput').hasClass('act')){
            $('.searchinput').removeClass('act'); 
@@ -15,27 +18,62 @@ $(function(){
            $('.searchinput input').focus();
         }
     });
-
-    $('#search-city').on('keypress', function(e){
-        if(e.which == 13 && !e.shiftkey){
-            const key =$(this).val();
-            $(this).val('');
-            $('.searchinput').removeClass('act');
-        }
-    });
-
-    
-
+ 
+   $('#search-city').on('keypress', function(e){
+       if(e.which == 13 && !e.shiftKey) {
+          const key = $(this).val();
+          //console.log(key);
+          $(this).val('');
+          $('.searchinput').removeClass('act'); 
+          getWeather('', '', key);
+       }
+   });
+ 
+   if(key == ''){
+      if(navigator.geolocation) {
+         navigator.geolocation.getCurrentPosition(function(position){
+             myLat = position.coords.latitude;
+             myLon = position.coords.longitude;
+             getWeather(myLat, myLon, '');
+         });
+      }
+   }
+ 
  }); //jquery
-
- function getWeatherLocation(){
-    navigator.geolocation.getCurrentPosition(
-        onWeatherSuccess, onWeatherError, {enableHighAccuracy: true}
-    );
- };
-
- const onWeatherSuccess = function(position){
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    
-};
+ 
+ 
+ 
+ function getWeather(lat, lon, city){
+     const mykey = '5b1a1491b7cda3982dddd235eb492b73';
+     const url = '//api.openweathermap.org/data/2.5/forecast';
+     let wdata;
+     if(city){
+        wdata = {
+         q : city,
+         appid: mykey,
+         units: 'metric',
+         lang: 'kr'
+        }
+     }else{
+        wdata = {
+         lat : lat,
+         lon : lon,
+         appid: mykey,
+         units: 'metric',
+         lang: 'kr'
+        } 
+     }
+     //console.log(wdata);
+     $.ajax({
+         dataType: 'json',
+         url: url,
+         data: wdata,
+         type: 'GET',
+         success: function(data) {
+             console.log(data);
+         },
+         error: function(xhr, status, error) {
+             console.log(error);
+         }
+     })
+ }
